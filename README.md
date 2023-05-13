@@ -17,7 +17,7 @@ do this on your terminal
 
 >>  now run tool using following command " python x3sc4.py "
 
->> Updates coming if requested conatct me via    " cylix-7@protonmail.ch" 
+>> Updates coming if requested contact me via    " cylix-7@protonmail.ch" 
 
 NB
 The scan is more accurate in SLOW & MEDIUM MODE. Fast scans are not quite recommended. This tool shouldnt be used for any malicious purposes!
