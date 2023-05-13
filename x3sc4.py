@@ -3,6 +3,8 @@ import time
 import sys
 import subprocess
 
+from colorama import Fore, Back, Style
+
 # Get the list of required modules
 required_modules = []
 with open("requirements.txt") as f:
@@ -15,18 +17,22 @@ for module in required_modules:
 
 # Continue with the rest of the code
 sys.stdout.flush()
-from pyfiglet import figlet_format
 
 # Print the banner
-ascii_banner = figlet_format("X3SCA V.1")
-print(ascii_banner)
+print(Fore.BLUE + Back.RED + Style.BRIGHT + """
+██╗███╗   ███╗██╗██████╗ ██╗   ██╗██╗███╗   ███╗██████╗ ██████╗ ██╗
+██║████╗ ████║██║██╔══██╗██║   ██║██║████╗ ████║██╔══██╗██╔══██╗██║
+██║██╔████╔██║██║██║  ██║██║   ██║██║██╔████╔██║██║  ██║██║  ██║██║
+██║██║╚██╔╝██║██║██║  ██║██║   ██║██║██║╚██╔╝██║██║  ██║██║  ██║██║
+██║██║ ╚═╝ ██║██║██████╔╝╚██████╔╝██║██║ ╚═╝ ██║██████╔╝╚██████╔╝██║
+╚═╝╚═╝     ╚═╝╚═╝╚═════╝  ╚═════╝ ╚═╝╚═╝     ╚═╝╚═════╝  ╚═════╝ ╚═╝
+X3SC4 V.1 by hive-wic aka BX-7 "THE UNDERGROUND SOLDIER"
 
-# Continue with the rest of the code
-sys.stdout.flush()
-
+""" + Style.RESET_ALL)
 # Prompt the user for the IP address or hostname to scan
 ip_address = input("Enter the IP address or hostname to scan: ")
 
+# Print the banner
 # Prompt the user for the scan speed
 scan_speed = input("Enter the scan speed (slow, medium, or fast): ")
 
@@ -40,16 +46,23 @@ else:
 
 # Start the scan
 print("Scanning...")
+open_ports = []
+closed_ports = []
 for port in range(1, 65536):
-    start_time = time.time()
-    try:
-        socket.create_connection((ip_address, port))
-        print("Port {} is open".format(port))
-    except socket.error:
-        pass
-    end_time = time.time()
-    time_taken = end_time - start_time
-    if time_taken < time_delay:
-        time.sleep(time_delay - time_taken)
+    # Use the `with` statement to ensure that the socket is closed
+    # even if an exception is raised
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        start_time = time.time()
+        try:
+            s.connect((ip_address, port))
+            open_ports.append(port)
+        except socket.error:
+            closed_ports.append(port)
+        end_time = time.time()
+        time_taken = end_time - start_time
+        if time_taken < time_delay:
+            time.sleep(time_delay - time_taken)
 
 print("Scan complete")
+print("Open ports: {}".format(open_ports))
+print("Closed ports: {}".format(closed_ports))
