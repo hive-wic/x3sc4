@@ -1,5 +1,7 @@
 # x3sc4
 
+SUPPORTS >> TERMUX KALI LINUX PARROT OS ALPINE LINUX IPHONE DEVICES(Use ISH TERMINAL AND FOLLOW APLINE LINUX INSTALL METHOD)
+
 Well your here because you need a smartport scanner right?
 do this on your terminal
 
