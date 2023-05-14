@@ -29,6 +29,7 @@ print(Fore.BLUE + Back.RED + Style.BRIGHT + """
 X3SC4 V.1 by hive-wic aka BX-7 "THE UNDERGROUND SOLDIER"
 
 """ + Style.RESET_ALL)
+
 # Prompt the user for the IP address or hostname to scan
 ip_address = input("Enter the IP address or hostname to scan: ")
 
@@ -66,3 +67,22 @@ for port in range(1, 65536):
 print("Scan complete")
 print("Open ports: {}".format(open_ports))
 print("Closed ports: {}".format(closed_ports))
+
+# Add logging and error handling
+import logging
+
+logger = logging.getLogger(__name__)
+
+def scan_ports(ip_address, ports):
+    open_ports = []
+    closed_ports = []
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        for port in ports:
+            start_time = time.time()
+            try:
+                s.connect((ip_address, port))
+                open_ports.append(port)
+            except socket.error as e:
+                closed_ports.append(port)
+                logger.error("Error connecting to port {}: {}".format(port, e))
+           
