@@ -1,89 +1,72 @@
 import socket
-import time
-import sys
-import subprocess
-import colorama
 import threading
 
-from colorama import Fore, Back, Style
-
-# Get the list of required modules
-required_modules = []
-with open("requirements.txt") as f:
-    for line in f:
-        required_modules.append(line.strip())
-
-# Install the required modules
-for module in required_modules:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", module])
-
-# Continue with the rest of the code
-sys.stdout.flush()
-
-# Print the banner
-print(Fore.BLUE + Back.RED + Style.BRIGHT + """
-██╗███╗   ███╗██╗██████╗ ██╗   ██╗██╗███╗   ███╗██████╗ ██████╗ ██╗
-██║████╗ ████║██║██╔══██╗██║   ██║██║████╗ ████║██╔══██╗██╔══██╗██║
-██║██╔████╔██║██║██║  ██║██║   ██║██║██╔████╔██║██║  ██║██║  ██║██║
-██║██║╚██╔╝██║██║██║  ██║██║   ██║██║██║╚██╔╝██║██║  ██║██║  ██║██║
-██║██║ ╚═╝ ██║██║██████╔╝╚██████╔╝██║██║ ╚═╝ ██║██████╔╝╚██████╔╝██║
-╚═╝╚═╝     ╚═╝╚═╝╚═════╝  ╚═════╝ ╚═╝╚═╝     ╚═╝╚═════╝  ╚═════╝ ╚═╝
-X3SC4 V.1 by hive-wic aka BX-7 "THE UNDERGROUND SOLDIER"
-
-""" + Style.RESET_ALL)
-
-# Prompt the user for the IP address or hostname to scan
-ip_address = input("Enter the IP address or hostname to scan: ")
-
-# Print the banner
-# Prompt the user for the scan speed
-# Only one option for scan speed is available
-scan_types = ["tcp", "udp"]
-scan_speed = "fast"
-
-# Check the scan speed
-# time_delay is set to 0.25 seconds by default
-time_delay = 0.25
-
-# Start the scan
-print("Scanning...")
-open_ports = []
-closed_ports = []
-
-# Use a multithreaded approach to scan multiple ports at the same time
-threads = []
-for port in range(1, 65536):
-    # Use the `with` statement to ensure that the socket is closed
-    # even if an exception is raised
+def scan_port(ip_address, port, protocol, speed):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        start_time = time.time()
+        s.settimeout(0.5)
         try:
             s.connect((ip_address, port))
-            open_ports.append(port)
-        except (socket.timeout, ConnectionRefusedError):
-            closed_ports.append(port)
-        end_time = time.time()
-        time_taken = end_time - start_time
-        if time_taken < time_delay:
-            time.sleep(time_delay - time_taken)
-        # Create a new thread to scan the port
-        
-def scan_port(ip_address, port):
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((ip_address, port))
             return True
-    except (socket.timeout, ConnectionRefusedError):
-        return False
+        except (socket.timeout, ConnectionRefusedError):
+            return False
 
-for port in range(1, 1024):
-    if scan_port(ip_address, port):
-        open_ports.append(port)
+def main():
+    print("██╗███╗   ███╗██╗██████╗ ██╗   ██╗██╗███╗   ███╗██████╗ ██████╗ ██╗")
+    print("██║████╗ ████║██║██╔══██╗██║   ██║██║████╗ ████║██╔══██╗██╔══██╗██║")
+    print("██║██╔████╔██║██║██║  ██║██║   ██║██║██╔████╔██║██║  ██║██║  ██║██║")
+    print("██║██║╚██╔╝██║██║██║  ██║██║   ██║██║██║╚██╔╝██║██║  ██║██║  ██║██║")
+    print("██║██║ ╚═╝ ██║██║██████╔╝╚██████╔╝██║██║ ╚═╝ ██║██████╔╝╚██████╔╝██║")
+    print("╚═╝╚═╝     ╚═╝╚═╝╚═════╝  ╚═════╝ ╚═╝╚═╝     ╚═╝╚═════╝  ╚═════╝ ╚═╝")
+    print("X3SC4 V.1 by hive-wic aka BX-7 ")
+
+    # Get the scanning speed
+    speed = input("Enter the scanning speed (fast, medium, or slow): ")
+    if speed == "fast":
+        time_delay = 0.25
+    elif speed == "medium":
+        time_delay = 0.5
+    elif speed == "slow":
+        time_delay = 1
     else:
-        closed_ports.append(port)
+        print("Invalid speed.")
+        return
 
-with open("results.txt", "w") as f:
-    for port in open_ports:
-        f.write("Open port: {}".format(port))
-    for port in closed_ports:
-        f.write("Closed port: {}".format(port))
+    # Get the scanning protocol
+    protocol = input("Enter the scanning protocol (tcp, udp, or both): ")
+    if protocol == "tcp":
+        protocol = "tcp"
+    elif protocol == "udp":
+        protocol = "udp"
+    elif protocol == "both":
+        protocol = "tcp,udp"
+    else:
+        print("Invalid protocol.")
+        return
+
+    ip_address = input("Enter the IP address or hostname to scan: ")
+    start_port = int(input("Enter the start port: "))
+    end_port = int(input("Enter the end port: "))
+
+    # Create a list of threads to scan the ports
+    threads = []
+    for port in range(start_port, end_port + 1):
+        thread = threading.Thread(target=scan_port, args=(ip_address, port, protocol, time_delay))
+        threads.append(thread)
+
+    # Start all of the threads
+    for thread in threads:
+        thread.start()
+
+    # Wait for all of the threads to finish
+    for thread in threads:
+        thread.join()
+
+    # Print the results
+    for port in range(start_port, end_port + 1):
+        if scan_port(ip_address, port, protocol, time_delay):
+            print("Port {} is open".format(port))
+        else:
+            print("Port {} is closed".format(port))
+
+if __name__ == "__main__":
+    main()
