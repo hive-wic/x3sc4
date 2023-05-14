@@ -57,7 +57,7 @@ for port in range(1, 65536):
         try:
             s.connect((ip_address, port))
             open_ports.append(port)
-        except socket.error:
+        except (socket.timeout, ConnectionRefusedError):
             closed_ports.append(port)
         end_time = time.time()
         time_taken = end_time - start_time
@@ -65,24 +65,7 @@ for port in range(1, 65536):
             time.sleep(time_delay - time_taken)
 
 print("Scan complete")
-print("Open ports: {}".format(open_ports))
-print("Closed ports: {}".format(closed_ports))
-
-# Add logging and error handling
-import logging
-
-logger = logging.getLogger(__name__)
-
-def scan_ports(ip_address, ports):
-    open_ports = []
-    closed_ports = []
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        for port in ports:
-            start_time = time.time()
-            try:
-                s.connect((ip_address, port))
-                open_ports.append(port)
-            except socket.error as e:
-                closed_ports.append(port)
-                logger.error("Error connecting to port {}: {}".format(port, e))
-           
+for port in open_ports:
+    print("Open port: {}".format(port))
+for port in closed_ports:
+    print("Closed port: {}".format(port))
