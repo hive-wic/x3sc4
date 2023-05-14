@@ -2,6 +2,8 @@ import socket
 import time
 import sys
 import subprocess
+import colorama
+import threading
 
 from colorama import Fore, Back, Style
 
@@ -35,20 +37,21 @@ ip_address = input("Enter the IP address or hostname to scan: ")
 
 # Print the banner
 # Prompt the user for the scan speed
-scan_speed = input("Enter the scan speed (slow, medium, or fast): ")
+# Only one option for scan speed is available
+scan_types = ["tcp", "udp"]
+scan_speed = "fast"
 
 # Check the scan speed
-if scan_speed == "slow":
-    time_delay = 1
-elif scan_speed == "medium":
-    time_delay = 0.5
-else:
-    time_delay = 0.25
+# time_delay is set to 0.25 seconds by default
+time_delay = 0.25
 
 # Start the scan
 print("Scanning...")
 open_ports = []
 closed_ports = []
+
+# Use a multithreaded approach to scan multiple ports at the same time
+threads = []
 for port in range(1, 65536):
     # Use the `with` statement to ensure that the socket is closed
     # even if an exception is raised
@@ -63,9 +66,24 @@ for port in range(1, 65536):
         time_taken = end_time - start_time
         if time_taken < time_delay:
             time.sleep(time_delay - time_taken)
+        # Create a new thread to scan the port
+        
+def scan_port(ip_address, port):
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((ip_address, port))
+            return True
+    except (socket.timeout, ConnectionRefusedError):
+        return False
 
-print("Scan complete")
-for port in open_ports:
-    print("Open port: {}".format(port))
-for port in closed_ports:
-    print("Closed port: {}".format(port))
+for port in range(1, 1024):
+    if scan_port(ip_address, port):
+        open_ports.append(port)
+    else:
+        closed_ports.append(port)
+
+with open("results.txt", "w") as f:
+    for port in open_ports:
+        f.write("Open port: {}".format(port))
+    for port in closed_ports:
+        f.write("Closed port: {}".format(port))
